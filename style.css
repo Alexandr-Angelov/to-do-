@@ -56,4 +56,19 @@ body {
     background: #ff4444;
     color: white;
     box-shadow: 0 0 10px #ff4444;
+
+}
+
+/* Стиль для выполненных задач */
+#done-list li {
+    text-decoration: line-through; /* Зачеркнутый текст */
+    opacity: 0.6;                 /* Полупрозрачность */
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Кнопка на весь экран */
+.secondary-btn {
+    margin-top: 15px;
+    background: rgba(255, 255, 255, 0.2);
+    font-size: 0.8em;
 }
