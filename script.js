@@ -1,54 +1,58 @@
 const DB_URL = "https://mytodo-6847f-default-rtdb.europe-west1.firebasedatabase.app/tasks.json";
 
+// --- ЗВУКИ ---
+const sounds = {
+    rain: new Audio('rain.mp3'),
+    fire: new Audio('fire.mp3'),
+    forest: new Audio('forest.mp3')
+};
+
+// Зацикливаем звуки
+Object.values(sounds).forEach(s => s.loop = true);
+
+// Управление громкостью
+function setupSound(id, soundKey) {
+    const slider = document.getElementById(id);
+    slider.oninput = () => {
+        sounds[soundKey].volume = slider.value;
+        if (slider.value > 0 && sounds[soundKey].paused) {
+            sounds[soundKey].play().catch(() => console.log("Кликните на страницу для звука"));
+        } else if (slider.value == 0) {
+            sounds[soundKey].pause();
+        }
+    };
+}
+
+setupSound('rain-vol', 'rain');
+setupSound('fire-vol', 'fire');
+setupSound('forest-vol', 'forest');
+
+// --- ТАЙМЕР ---
 let timeLeft = 25 * 60;
 let timerId = null;
 let isPaused = true;
-let isWorking = true;
-let currentCycle = 1;
 
-// --- ТАЙМЕР ---
 function renderTimer() {
     const mins = Math.floor(timeLeft / 60);
     const secs = timeLeft % 60;
     document.getElementById('timer-display').textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
 }
 
-function updateTimer() {
-    if (isPaused) return;
-    if (timeLeft > 0) {
-        timeLeft--;
-        renderTimer();
-    } else {
-        clearInterval(timerId);
-        timerId = null;
-        if (isWorking) {
-            isWorking = false;
-            timeLeft = (document.getElementById('break-time').value || 5) * 60;
-            document.getElementById('status-text').textContent = "ОТДЫХ";
-        } else {
-            isWorking = true;
-            currentCycle++;
-            timeLeft = (document.getElementById('work-time').value || 25) * 60;
-            document.getElementById('status-text').textContent = `РАБОТА (${currentCycle})`;
-        }
-        startTimer();
-    }
-}
-
-function startTimer() {
+document.getElementById('start-btn').onclick = () => {
     isPaused = false;
-    if (!timerId) timerId = setInterval(updateTimer, 1000);
-}
+    if (!timerId) timerId = setInterval(() => {
+        if (!isPaused && timeLeft > 0) {
+            timeLeft--;
+            renderTimer();
+        }
+    }, 1000);
+};
 
-document.getElementById('start-btn').onclick = startTimer;
 document.getElementById('pause-btn').onclick = () => isPaused = true;
 document.getElementById('reset-btn').onclick = () => {
     isPaused = true;
-    clearInterval(timerId);
-    timerId = null;
     timeLeft = (document.getElementById('work-time').value || 25) * 60;
     renderTimer();
-    document.getElementById('status-text').textContent = "ГОТОВ?";
 };
 
 // --- FULLSCREEN ---
@@ -83,27 +87,18 @@ async function loadTasks() {
                 const li = document.createElement('li');
                 li.textContent = task.text;
                 li.onclick = () => toggleTask(key, task.done);
-                
-                if (task.done) {
-                    li.classList.add('done-item');
-                    doneList.appendChild(li);
-                    done++;
-                } else {
-                    todoList.appendChild(li);
-                }
+                if (task.done) { li.classList.add('done-item'); doneList.appendChild(li); done++; }
+                else { todoList.appendChild(li); }
             });
         }
         pc.textContent = total > 0 ? Math.round((done / total) * 100) + "%" : "0%";
-    } catch (e) { console.error("Firebase Error"); }
+    } catch (e) { console.log("Firebase sync..."); }
 }
 
 async function addTask() {
     const input = document.getElementById('todo-input');
     if (!input.value.trim()) return;
-    await fetch(DB_URL, { 
-        method: 'POST', 
-        body: JSON.stringify({ text: input.value, done: false }) 
-    });
+    await fetch(DB_URL, { method: 'POST', body: JSON.stringify({ text: input.value, done: false }) });
     input.value = '';
     loadTasks();
 }
@@ -118,12 +113,8 @@ async function toggleTask(id, currentStatus) {
 
 document.getElementById('add-todo').onclick = addTask;
 document.getElementById('clear-all-tasks').onclick = async () => {
-    if (confirm("Удалить всё из базы?")) {
-        await fetch(DB_URL, { method: 'DELETE' });
-        loadTasks();
-    }
+    if (confirm("Очистить базу?")) { await fetch(DB_URL, { method: 'DELETE' }); loadTasks(); }
 };
 
-// Авто-синхронизация
 setInterval(loadTasks, 4000);
 loadTasks();
