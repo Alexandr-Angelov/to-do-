@@ -2,14 +2,14 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Focus App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Focus Flow & Sync</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div class="container" id="main-container">
-        <div class="card timer-card" id="timer-card">
+    <div class="container" id="app-container">
+        <div class="card timer-card">
             <h2 id="status-text">ГОТОВ?</h2>
             <div id="timer-display">25:00</div>
             
@@ -19,46 +19,46 @@
                 <button id="reset-btn">СБРОС</button>
             </div>
 
-            <div class="settings">
-                <div class="setting-item">
-                    <label>Работа (мин):</label>
+            <div class="timer-settings">
+                <div class="input-box">
+                    <span>Работа:</span>
                     <input type="number" id="work-time" value="25">
                 </div>
-                <div class="setting-item">
-                    <label>Отдых (мин):</label>
+                <div class="input-box">
+                    <span>Отдых:</span>
                     <input type="number" id="break-time" value="5">
                 </div>
             </div>
             
-            <button id="fullscreen-btn" class="secondary-btn">НА ВЕСЬ ЭКРАН</button>
+            <button id="fullscreen-btn" class="secondary-btn">РАЗВЕРНУТЬ НА ВЕСЬ ЭКРАН</button>
         </div>
 
         <div class="card todo-card">
             <div class="todo-header">
-                <h2>ЗАДАЧИ</h2>
-                <span id="completion-pc">0%</span>
+                <h2>СПИСОК ЗАДАЧ</h2>
+                <div id="completion-pc">0%</div>
             </div>
 
             <div class="input-group">
-                <input type="text" id="todo-input" placeholder="Что нужно сделать?">
+                <input type="text" id="todo-input" placeholder="Добавить задачу...">
                 <button id="add-todo">+</button>
             </div>
 
-            <h3>В процессе:</h3>
-            <ul id="todo-list"></ul>
+            <div class="task-sections">
+                <h4>В ПРОЦЕССЕ</h4>
+                <ul id="todo-list"></ul>
+                
+                <h4>ВЫПОЛНЕНО</h4>
+                <ul id="done-list"></ul>
+            </div>
 
-            <hr>
-
-            <h3>Выполнено:</h3>
-            <ul id="done-list"></ul>
-
-            <button id="clear-all-tasks" class="danger-btn">ОЧИСТИТЬ ВСЁ</button>
+            <button id="clear-all-tasks" class="danger-btn">ОЧИСТИТЬ ОБЛАКО</button>
         </div>
 
-        <div class="card sounds-card">
+        <div class="card sound-card">
             <h3>АТМОСФЕРА</h3>
-            <div class="sound-item">
-                <label>🌧️ Дождь</label>
+            <div class="sound-row">
+                <span>🌧️ Дождь</span>
                 <input type="range" id="rain-vol" min="0" max="1" step="0.1" value="0">
             </div>
         </div>
