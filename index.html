@@ -7,63 +7,61 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <div class="container" id="app-container">
-        <div class="card timer-card">
-            <h2 id="status-text">ГОТОВ?</h2>
-            <div id="timer-display">25:00</div>
-            
-            <div class="controls">
-                <button id="start-btn">СТАРТ</button>
-                <button id="pause-btn">ПАУЗА</button>
-                <button id="reset-btn">СБРОС</button>
-            </div>
-
-            <div class="timer-settings">
-                <div class="input-box">
-                    <span>Работа:</span>
+    <div class="app-wrapper">
+        <div class="container">
+            <div class="card timer-card">
+                <h2 id="status-text">ФОКУС</h2>
+                <div id="timer-display">25:00</div>
+                <div class="btn-group">
+                    <button id="start-btn" class="main-btn">СТАРТ</button>
+                    <button id="pause-btn" class="main-btn">ПАУЗА</button>
+                    <button id="reset-btn" class="main-btn">СБРОС</button>
+                </div>
+                <div class="settings-row">
                     <input type="number" id="work-time" value="25">
-                </div>
-                <div class="input-box">
-                    <span>Отдых:</span>
+                    <span>мин /</span>
                     <input type="number" id="break-time" value="5">
+                    <span>отдых</span>
+                </div>
+                <button id="fullscreen-btn" class="glass-btn">ПОЛНЫЙ ЭКРАН</button>
+            </div>
+
+            <div class="card sound-card">
+                <h3>АТМОСФЕРА</h3>
+                <div class="sound-item">
+                    <span>🌧️ Дождь</span>
+                    <input type="range" id="rain-vol" min="0" max="1" step="0.1" value="0">
+                </div>
+                <div class="sound-item">
+                    <span>🔥 Костер</span>
+                    <input type="range" id="fire-vol" min="0" max="1" step="0.1" value="0">
+                </div>
+                <div class="sound-item">
+                    <span>🌲 Лес</span>
+                    <input type="range" id="forest-vol" min="0" max="1" step="0.1" value="0">
                 </div>
             </div>
-            
-            <button id="fullscreen-btn" class="secondary-btn">РАЗВЕРНУТЬ НА ВЕСЬ ЭКРАН</button>
-        </div>
 
-        <div class="card todo-card">
-            <div class="todo-header">
-                <h2>СПИСОК ЗАДАЧ</h2>
-                <div id="completion-pc">0%</div>
-            </div>
-
-            <div class="input-group">
-                <input type="text" id="todo-input" placeholder="Добавить задачу...">
-                <button id="add-todo">+</button>
-            </div>
-
-            <div class="task-sections">
-                <h4>В ПРОЦЕССЕ</h4>
-                <ul id="todo-list"></ul>
+            <div class="card tasks-card">
+                <div class="header-row">
+                    <h3>ЗАДАЧИ</h3>
+                    <div id="completion-pc">0%</div>
+                </div>
+                <div class="input-row">
+                    <input type="text" id="todo-input" placeholder="Добавить задачу...">
+                    <button id="add-todo">+</button>
+                </div>
                 
-                <h4>ВЫПОЛНЕНО</h4>
-                <ul id="done-list"></ul>
-            </div>
-
-            <button id="clear-all-tasks" class="danger-btn">ОЧИСТИТЬ ОБЛАКО</button>
-        </div>
-
-        <div class="card sound-card">
-            <h3>АТМОСФЕРА</h3>
-            <div class="sound-row">
-                <span>🌧️ Дождь</span>
-                <input type="range" id="rain-vol" min="0" max="1" step="0.1" value="0">
+                <div class="list-container">
+                    <p class="label">В РАБОТЕ</p>
+                    <ul id="todo-list"></ul>
+                    <p class="label">ВЫПОЛНЕНО</p>
+                    <ul id="done-list"></ul>
+                </div>
+                <button id="clear-all-tasks" class="danger-btn">ОЧИСТИТЬ ВСЁ</button>
             </div>
         </div>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
