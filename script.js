@@ -1,72 +1,110 @@
 const DB_URL = "https://mytodo-6847f-default-rtdb.europe-west1.firebasedatabase.app/tasks.json";
 
-// --- ФУНКЦИЯ ЗАГРУЗКИ (ОБЩАЯ ДЛЯ ВСЕХ УСТРОЙСТВ) ---
-async function syncTasks() {
+// Глобальная переменная для хранения задач
+let tasks = [];
+
+// --- 1. ЗАГРУЗКА И СИНХРОНИЗАЦИЯ ---
+async function loadTasks() {
     try {
         const response = await fetch(DB_URL);
         const data = await response.json();
         
-        const todoList = document.getElementById('todo-list');
-        todoList.innerHTML = ''; // Чистим список перед обновлением
-
+        // Превращаем объект Firebase в массив
         if (data) {
-            // Firebase возвращает объект, превращаем его в список
-            Object.keys(data).forEach(key => {
-                const task = data[key];
-                const li = document.createElement('li');
-                li.textContent = task.text;
-                
-                // Клик по задаче удаляет её ВЕЗДЕ (и на компе, и в боте)
-                li.onclick = async () => {
-                    await fetch(`https://mytodo-6847f-default-rtdb.europe-west1.firebasedatabase.app/tasks/${key}.json`, {
-                        method: 'DELETE'
-                    });
-                    syncTasks(); // Сразу обновляем экран
-                };
-                
-                todoList.appendChild(li);
-            });
+            tasks = Object.keys(data).map(key => ({
+                id: key,
+                text: data[key].text,
+                done: data[key].done || false
+            }));
+        } else {
+            tasks = [];
         }
-        
-        // Обновляем счетчик задач
-        const count = data ? Object.keys(data).length : 0;
-        document.getElementById('completion-pc').textContent = count > 0 ? `Задач: ${count}` : "0%";
-        
-    } catch (e) {
-        console.log("Ошибка синхронизации:", e);
+
+        renderTasks();
+    } catch (error) {
+        console.error("Ошибка при получении данных:", error);
     }
 }
 
-// --- ДОБАВЛЕНИЕ ЗАДАЧИ ---
-document.getElementById('add-todo').onclick = async () => {
+// --- 2. ДОБАВЛЕНИЕ ЗАДАЧИ ---
+async function addTask() {
     const input = document.getElementById('todo-input');
-    if (input.value.trim() !== "") {
+    const text = input.value.trim();
+
+    if (text !== "") {
         const newTask = {
-            text: input.value,
+            text: text,
             done: false,
-            time: Date.now()
+            createdAt: Date.now()
         };
-        // Отправляем в Firebase
-        await fetch(DB_URL, {
-            method: 'POST',
-            body: JSON.stringify(newTask)
-        });
-        input.value = "";
-        syncTasks();
+
+        try {
+            await fetch(DB_URL, {
+                method: 'POST',
+                body: JSON.stringify(newTask)
+            });
+            input.value = "";
+            await loadTasks(); // Обновляем список сразу после добавления
+        } catch (error) {
+            alert("Не удалось сохранить задачу в облако!");
+        }
     }
+}
+
+// --- 3. УДАЛЕНИЕ (ВЫПОЛНЕНИЕ) ---
+async function deleteTask(firebaseId) {
+    try {
+        const taskUrl = `https://mytodo-6847f-default-rtdb.europe-west1.firebasedatabase.app/tasks/${firebaseId}.json`;
+        await fetch(taskUrl, { method: 'DELETE' });
+        await loadTasks(); // Обновляем список
+    } catch (error) {
+        console.error("Ошибка при удалении:", error);
+    }
+}
+
+// --- 4. ОТРИСОВКА И ПРОЦЕНТЫ ---
+function renderTasks() {
+    const todoList = document.getElementById('todo-list');
+    const percentDisplay = document.getElementById('completion-pc');
+    
+    todoList.innerHTML = '';
+
+    tasks.forEach(task => {
+        const li = document.createElement('li');
+        li.textContent = task.text;
+        // При клике задача удаляется из базы (считается выполненной)
+        li.onclick = () => deleteTask(task.id);
+        todoList.appendChild(li);
+    });
+
+    // Считаем проценты или количество
+    if (tasks.length > 0) {
+        percentDisplay.textContent = `Задач: ${tasks.length}`;
+        percentDisplay.style.color = "#00fbff";
+    } else {
+        percentDisplay.textContent = "0%";
+        percentDisplay.style.color = "white";
+    }
+}
+
+// --- 5. КНОПКИ И СОБЫТИЯ ---
+document.getElementById('add-todo').onclick = addTask;
+
+// Позволяет добавлять задачу нажатием Enter
+document.getElementById('todo-input').onkeypress = (e) => {
+    if (e.key === 'Enter') addTask();
 };
 
-// --- ОЧИСТКА ВСЕГО ---
 document.getElementById('clear-all-tasks').onclick = async () => {
-    if (confirm("Очистить список на всех устройствах?")) {
+    if (confirm("Очистить весь список везде?")) {
         await fetch(DB_URL, { method: 'DELETE' });
-        syncTasks();
+        loadTasks();
     }
 };
 
-// --- АВТОМАТИКА ---
-// Проверять наличие новых задач каждые 3 секунды
-setInterval(syncTasks, 3000);
+// --- 6. АВТОМАТИЧЕСКОЕ ОБНОВЛЕНИЕ ---
+// Проверяем базу каждые 3 секунды для синхронизации с телефоном/ботом
+setInterval(loadTasks, 3000);
 
-// Запустить при открытии страницы
-syncTasks();
+// Первый запуск при загрузке страницы
+loadTasks();
