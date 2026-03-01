@@ -3,63 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Focus Flow & Sync</title>
+    <title>Focus Flow</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="app-wrapper">
-        <div class="container">
-            <div class="card timer-card">
-                <h2 id="status-text">ФОКУС</h2>
-                <div id="timer-display">25:00</div>
-                <div class="btn-group">
-                    <button id="start-btn" class="main-btn">СТАРТ</button>
-                    <button id="pause-btn" class="main-btn">ПАУЗА</button>
-                    <button id="reset-btn" class="main-btn">СБРОС</button>
-                </div>
-                <div class="settings-row">
+    <div class="app-container">
+        <div class="card main-card">
+            <h2 id="status-text">ФОКУС</h2>
+            <div id="timer-display">25:00</div>
+            
+            <div class="btn-group">
+                <button id="start-btn">СТАРТ</button>
+                <button id="pause-btn">ПАУЗА</button>
+                <button id="reset-btn">СБРОС</button>
+            </div>
+
+            <div class="timer-settings">
+                <div class="s-block">
+                    <span>Работа</span>
                     <input type="number" id="work-time" value="25">
-                    <span>мин /</span>
+                </div>
+                <div class="s-block">
+                    <span>Отдых</span>
                     <input type="number" id="break-time" value="5">
-                    <span>отдых</span>
                 </div>
-                <button id="fullscreen-btn" class="glass-btn">ПОЛНЫЙ ЭКРАН</button>
+            </div>
+            <button id="fullscreen-btn" class="wide-btn">ПОЛНЫЙ ЭКРАН</button>
+        </div>
+
+        <div class="card">
+            <h3>АТМОСФЕРА</h3>
+            <div class="sound-control">
+                <span>🌧️ Дождь</span>
+                <input type="range" id="rain-vol" min="0" max="1" step="0.1" value="0">
+            </div>
+            <div class="sound-control">
+                <span>🔥 Костер</span>
+                <input type="range" id="fire-vol" min="0" max="1" step="0.1" value="0">
+            </div>
+            <div class="sound-control">
+                <span>🌲 Лес</span>
+                <input type="range" id="forest-vol" min="0" max="1" step="0.1" value="0">
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="task-header">
+                <h3>ЗАДАЧИ</h3>
+                <span id="completion-pc">0%</span>
+            </div>
+            
+            <div class="task-input">
+                <input type="text" id="todo-input" placeholder="Добавить цель...">
+                <button id="add-todo">+</button>
             </div>
 
-            <div class="card sound-card">
-                <h3>АТМОСФЕРА</h3>
-                <div class="sound-item">
-                    <span>🌧️ Дождь</span>
-                    <input type="range" id="rain-vol" min="0" max="1" step="0.1" value="0">
-                </div>
-                <div class="sound-item">
-                    <span>🔥 Костер</span>
-                    <input type="range" id="fire-vol" min="0" max="1" step="0.1" value="0">
-                </div>
-                <div class="sound-item">
-                    <span>🌲 Лес</span>
-                    <input type="range" id="forest-vol" min="0" max="1" step="0.1" value="0">
-                </div>
-            </div>
+            <p class="section-label">В РАБОТЕ</p>
+            <ul id="todo-list"></ul>
 
-            <div class="card tasks-card">
-                <div class="header-row">
-                    <h3>ЗАДАЧИ</h3>
-                    <div id="completion-pc">0%</div>
-                </div>
-                <div class="input-row">
-                    <input type="text" id="todo-input" placeholder="Добавить задачу...">
-                    <button id="add-todo">+</button>
-                </div>
-                
-                <div class="list-container">
-                    <p class="label">В РАБОТЕ</p>
-                    <ul id="todo-list"></ul>
-                    <p class="label">ВЫПОЛНЕНО</p>
-                    <ul id="done-list"></ul>
-                </div>
-                <button id="clear-all-tasks" class="danger-btn">ОЧИСТИТЬ ВСЁ</button>
-            </div>
+            <p class="section-label">ВЫПОЛНЕНО</p>
+            <ul id="done-list"></ul>
+
+            <button id="clear-all-tasks" class="danger-btn">ОЧИСТИТЬ ВСЁ</button>
         </div>
     </div>
     <script src="script.js"></script>
