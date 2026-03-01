@@ -1,0 +1,59 @@
+:root { --accent: #00fbff; --glass: rgba(255, 255, 255, 0.08); }
+
+body {
+    margin: 0; min-height: 100vh; display: flex; justify-content: center; align-items: center;
+    font-family: 'Arial Black', sans-serif; background: #0a0a0a; color: white;
+}
+
+.glass-container {
+    display: grid; grid-template-columns: 1.5fr 1fr; gap: 30px; width: 95%; max-width: 1200px;
+}
+
+.timer-card {
+    background: var(--glass); backdrop-filter: blur(20px); border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 30px; padding: 40px; text-align: center; position: relative;
+}
+
+/* ОГРОМНЫЙ ТАЙМЕР */
+#status-text { font-size: 2rem; color: var(--accent); letter-spacing: 5px; margin: 0; }
+#timer-display { font-size: 10rem; margin: 10px 0; line-height: 1; text-shadow: 0 0 30px var(--accent); }
+
+.timer-settings { display: flex; justify-content: space-around; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 20px; margin-bottom: 20px; }
+.setting-item { display: flex; flex-direction: column; gap: 10px; }
+.setting-item label { font-size: 0.8rem; opacity: 0.7; }
+.setting-item input { font-size: 1.5rem; width: 80px; background: none; border: 1px solid var(--accent); color: white; text-align: center; border-radius: 10px; }
+
+.controls { display: flex; flex-direction: column; gap: 15px; }
+.main-btn { padding: 25px; font-size: 1.5rem; background: var(--accent); border: none; border-radius: 15px; cursor: pointer; font-weight: bold; }
+.secondary-btn { padding: 15px; background: rgba(255,255,255,0.1); border: none; color: white; border-radius: 10px; cursor: pointer; }
+
+/* ЗАДАЧИ */
+.todo-card h2 { font-size: 2rem; margin-top: 0; }
+.list-title { font-size: 0.7rem; margin: 20px 0 10px; opacity: 0.5; border-bottom: 1px solid rgba(255,255,255,0.1); }
+#todo-list li, #done-list li { 
+    background: rgba(255,255,255,0.05); padding: 15px; margin-bottom: 10px; border-radius: 12px; font-size: 1.2rem; cursor: pointer; 
+}
+
+/* МОБИЛКА */
+@media (max-width: 900px) {
+    .glass-container { grid-template-columns: 1fr; }
+    #timer-display { font-size: 6rem; }
+}
+
+.clear-btn {
+    background: rgba(255, 68, 68, 0.2);
+    border: 1px solid #ff4444;
+    color: #ff4444;
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: 0.3s;
+    font-family: 'Arial Black', sans-serif;
+}
+
+.clear-btn:hover {
+    background: #ff4444;
+    color: white;
+    box-shadow: 0 0 10px #ff4444;
+}
