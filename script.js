@@ -1,25 +1,24 @@
 const DB_URL = "https://mytodo-6847f-default-rtdb.europe-west1.firebasedatabase.app/tasks.json";
 
-let timeLeft;
+// --- ПЕРЕМЕННЫЕ ---
+let timeLeft = 25 * 60;
 let timerId = null;
 let isPaused = true;
 let currentCycle = 1;
 let isWorking = true;
 let tasks = [];
 
-// --- 1. ЛОГИКА ТАЙМЕРА ---
+// --- 1. ТАЙМЕР (ИСПРАВЛЕН ДЛЯ ТЕЛЕФОНОВ) ---
 
 function updateTimer() {
-    if (isPaused) return;
+    if (isPaused || timeLeft <= 0) return;
+
     timeLeft--;
-    
-    const mins = Math.floor(timeLeft / 60);
-    const secs = timeLeft % 60;
-    document.getElementById('timer-display').textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    renderTimer();
 
     if (timeLeft <= 0) {
-        clearInterval(timerId);
-        timerId = null;
+        stopTimer();
+        // Переключение фаз
         if (isWorking) {
             isWorking = false;
             timeLeft = (parseInt(document.getElementById('break-time').value) || 5) * 60;
@@ -30,79 +29,108 @@ function updateTimer() {
             timeLeft = (parseInt(document.getElementById('work-time').value) || 25) * 60;
             document.getElementById('status-text').textContent = `РАБОТА (${currentCycle})`;
         }
-        startTimer();
+        alert("Время вышло!"); // Уведомление для мобилок
     }
+}
+
+function renderTimer() {
+    const mins = Math.floor(timeLeft / 60);
+    const secs = timeLeft % 60;
+    document.getElementById('timer-display').textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
 }
 
 function startTimer() {
-    isPaused = false;
-    if (!timeLeft) {
-        const workMins = parseInt(document.getElementById('work-time').value) || 25;
-        timeLeft = workMins * 60;
+    if (isPaused) {
+        isPaused = false;
+        if (!timerId) {
+            timerId = setInterval(updateTimer, 1000);
+        }
+        document.getElementById('status-text').textContent = isWorking ? `РАБОТА (${currentCycle})` : "ОТДЫХ";
     }
-    if (!timerId) timerId = setInterval(updateTimer, 1000);
-    document.getElementById('status-text').textContent = isWorking ? `РАБОТА (${currentCycle})` : "ОТДЫХ";
 }
 
-document.getElementById('start-btn').onclick = startTimer;
-document.getElementById('pause-btn').onclick = () => { isPaused = true; };
-document.getElementById('reset-btn').onclick = () => {
+function stopTimer() {
+    isPaused = true;
     clearInterval(timerId);
     timerId = null;
-    timeLeft = null;
-    isPaused = true;
-    document.getElementById('timer-display').textContent = "25:00";
+}
+
+// Кнопки таймера
+document.getElementById('start-btn').onclick = startTimer;
+document.getElementById('pause-btn').onclick = stopTimer;
+document.getElementById('reset-btn').onclick = () => {
+    stopTimer();
+    const workMins = parseInt(document.getElementById('work-time').value) || 25;
+    timeLeft = workMins * 60;
+    isWorking = true;
+    currentCycle = 1;
+    renderTimer();
     document.getElementById('status-text').textContent = "ГОТОВ?";
 };
 
-// --- 2. ЛОГИКА ЗАДАЧ (FIREBASE) ---
+// --- 2. ПОЛНОЭКРАННЫЙ РЕЖИМ (ДЛЯ ВСЕХ) ---
+
+document.getElementById('fullscreen-btn').onclick = () => {
+    const elem = document.documentElement; // Весь сайт на весь экран
+    if (!document.fullscreenElement) {
+        if (elem.requestFullscreen) elem.requestFullscreen();
+        else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen(); // Для Safari/iPhone
+        else if (elem.msRequestFullscreen) elem.msRequestFullscreen();
+    } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+    }
+};
+
+// --- 3. ЗАДАЧИ И СИНХРОНИЗАЦИЯ (FIREBASE) ---
 
 async function loadTasks() {
     try {
         const response = await fetch(DB_URL);
         const data = await response.json();
+        // Превращаем объект в массив с ID
         tasks = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
-        renderTasks();
-    } catch (e) { console.error("Ошибка загрузки:", e); }
+        renderTasksUI();
+    } catch (e) { console.error("Ошибка сети:", e); }
 }
 
 async function addTask() {
     const input = document.getElementById('todo-input');
-    if (input.value.trim() === "") return;
+    if (!input.value.trim()) return;
+    
     const newTask = { text: input.value, done: false };
     await fetch(DB_URL, { method: 'POST', body: JSON.stringify(newTask) });
     input.value = "";
     loadTasks();
 }
 
-// Теперь вместо удаления мы меняем статус done: true
-async function toggleTask(id, currentStatus) {
+// Смена статуса (не удаление!)
+async function toggleTaskStatus(id, currentDone) {
     const url = `https://mytodo-6847f-default-rtdb.europe-west1.firebasedatabase.app/tasks/${id}.json`;
     await fetch(url, {
         method: 'PATCH',
-        body: JSON.stringify({ done: !currentStatus })
+        body: JSON.stringify({ done: !currentDone })
     });
     loadTasks();
 }
 
-function renderTasks() {
+function renderTasksUI() {
     const todoList = document.getElementById('todo-list');
     const doneList = document.getElementById('done-list');
     const pcDisplay = document.getElementById('completion-pc');
-    
+
     todoList.innerHTML = '';
     doneList.innerHTML = '';
+    let doneCount = 0;
 
-    let completedCount = 0;
-
-    tasks.forEach(task => {
+    tasks.forEach(t => {
         const li = document.createElement('li');
-        li.textContent = task.text;
-        li.onclick = () => toggleTask(task.id, task.done);
+        li.textContent = t.text;
+        li.onclick = () => toggleTaskStatus(t.id, t.done);
 
-        if (task.done) {
+        if (t.done) {
+            li.classList.add('done'); // Добавь в CSS .done { text-decoration: line-through; opacity: 0.5; }
             doneList.appendChild(li);
-            completedCount++;
+            doneCount++;
         } else {
             todoList.appendChild(li);
         }
@@ -110,27 +138,19 @@ function renderTasks() {
 
     // Расчет процентов
     const total = tasks.length;
-    const percent = total > 0 ? Math.round((completedCount / total) * 100) : 0;
+    const percent = total > 0 ? Math.round((doneCount / total) * 100) : 0;
     pcDisplay.textContent = `${percent}%`;
 }
 
-// --- 3. ЗВУКИ И ДОПЫ ---
-
+// Привязка к кнопкам
 document.getElementById('add-todo').onclick = addTask;
 document.getElementById('clear-all-tasks').onclick = async () => {
-    if (confirm("Очистить всё?")) {
+    if (confirm("Удалить всё?")) {
         await fetch(DB_URL, { method: 'DELETE' });
         loadTasks();
     }
 };
 
-// Звуки дождя/огня (если есть в HTML)
-const rainSnd = new Audio('rain.mp3'); rainSnd.loop = true;
-document.getElementById('rain-vol').oninput = (e) => {
-    rainSnd.volume = e.target.value;
-    if (e.target.value > 0) rainSnd.play(); else rainSnd.pause();
-};
-
 // Запуск
 loadTasks();
-setInterval(loadTasks, 4000); // Синхронизация каждые 4 сек
+setInterval(loadTasks, 5000); // Синхронизация каждые 5 сек
